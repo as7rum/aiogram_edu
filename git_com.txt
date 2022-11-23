@@ -1,0 +1,5 @@
+git checkout -b develop #создание + переключение к новой ветке
+git checkout 'name' #переключение между ветками
+git branch #вывод списка веток
+git branch -a #Вывод всех веток
+git merge 'name'# где 'name' имя ветки, которую присоединяем к текущей
