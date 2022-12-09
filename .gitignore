@@ -1,2 +1,5 @@
 config.py
 requirements.txt
+edu.py
+__pycache__/
+messages.py
