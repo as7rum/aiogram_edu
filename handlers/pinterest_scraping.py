@@ -16,6 +16,19 @@ router = Router()
 other_markers = ["ещё картинки", 'еще', 'ещё']
 other_request = ["другой запрос"]
 
+kb = [
+        [
+            types.KeyboardButton(text="Ещё картинки"),
+            types.KeyboardButton(text="Другой запрос"),
+            types.KeyboardButton(text="Я больше не хочу искать картинки")
+        ],
+    ]
+keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        resize_keyboard=True,
+        input_field_placeholder="Введи запрос или выбери, что хочешь сделать дальше?"
+    )
+
 list_of_images = []
 current_sending_page = 1
 COUNT_FOR_SENDING = 5
@@ -72,19 +85,7 @@ class GetingImages(StatesGroup):
 @router.message(Text(text="искать картинки", text_ignore_case=True))
 async def start_weather_script(message: Message, state: FSMContext):
     
-    kb = [
-        [
-            types.KeyboardButton(text="Ещё картинки"),
-            types.KeyboardButton(text="Другой запрос"),
-            types.KeyboardButton(text="Я больше не хочу искать картинки")
-        ],
-    ]
-    keyboard = types.ReplyKeyboardMarkup(
-        keyboard=kb,
-        resize_keyboard=True,
-        input_field_placeholder="Введи запрос или выбери, что хочешь сделать дальше?"
-    )
-    
+    global keyboard
     await message.answer(
         text= scraping_start_message, reply_markup=keyboard)
     # Устанавливаем пользователю состояние "выбирает название"
@@ -126,13 +127,13 @@ async def send(message: types.Message, state: FSMContext):
     global limit
     global current_sending_page
     global pin_request_input
-
+    global keyboard
 
     pin_request_input = message.text
     current_sending_page = 1
     get_images(message.text, sleep_timer, limit)
     images_link = get_five_photos()
     map_images_link = list(map(lambda x: types.InputMediaPhoto(media = x), images_link))
-    await message.answer(pin_request_input)
+    await message.answer(pin_request_input, reply_markup=keyboard)
     await message.answer_media_group(map_images_link)
     await state.set_state(GetingImages.sending_other_images)
