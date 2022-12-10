@@ -1,4 +1,4 @@
-from messages import start_message, scraping_start_message
+from messages import request_error_message, scraping_start_message
 import asyncio
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -85,9 +85,8 @@ class GetingImages(StatesGroup):
 @router.message(Text(text="искать картинки", text_ignore_case=True))
 async def start_weather_script(message: Message, state: FSMContext):
     
-    global keyboard
     await message.answer(
-        text= scraping_start_message, reply_markup=keyboard)
+        text= scraping_start_message)
     # Устанавливаем пользователю состояние "выбирает название"
     await state.set_state(GetingImages.getting_images)
     
@@ -129,11 +128,15 @@ async def send(message: types.Message, state: FSMContext):
     global pin_request_input
     global keyboard
 
-    pin_request_input = message.text
-    current_sending_page = 1
-    get_images(message.text, sleep_timer, limit)
-    images_link = get_five_photos()
-    map_images_link = list(map(lambda x: types.InputMediaPhoto(media = x), images_link))
-    await message.answer(pin_request_input, reply_markup=keyboard)
-    await message.answer_media_group(map_images_link)
-    await state.set_state(GetingImages.sending_other_images)
+    try:
+        pin_request_input = message.text
+        current_sending_page = 1
+        get_images(message.text, sleep_timer, limit)
+        images_link = get_five_photos()
+        map_images_link = list(map(lambda x: types.InputMediaPhoto(media = x), images_link))
+        await message.answer(pin_request_input, reply_markup=keyboard)
+        await message.answer_media_group(map_images_link)
+        await state.set_state(GetingImages.sending_other_images)
+    except:
+        await message.answer(request_error_message, reply_markup=keyboard)
+        await state.set_state(GetingImages.getting_images)
